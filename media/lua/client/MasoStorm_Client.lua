@@ -230,7 +230,7 @@ local function onEveryOneMinute()
         StormUtils.applyBlindess(factor)
     end
 
-    if (progress > 0.45 and progress < 0.55) then
+    if (progress > 0.46 and progress < 0.5) then
         StormUtils.playRandomThunder(true, 100)
         StormUtils.trip()
     end
