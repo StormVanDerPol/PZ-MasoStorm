@@ -50,6 +50,7 @@ Events.EveryHours.Add(onEveryHours)
 
 -- DEBUG ONLY
 local function onKeyPressed(key)
+    -- Key O to trigger event.
     if (key == 24) then
         print("server key code: ", key)
 

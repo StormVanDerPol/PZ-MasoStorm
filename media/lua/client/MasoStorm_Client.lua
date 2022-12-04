@@ -154,7 +154,7 @@ local StormUtils = {
         mode:getRadius():setTargets(5 / factor, 5 / factor)
         mode:getDarkness():setTargets(factor / 1.2, factor / 1.2)
 
-        getPlayer():Say(tostring(factor))
+        -- getPlayer():Say(tostring(factor))
 
         if (factor == 0) then
             getSearchMode():setEnabled(character:getPlayerNum(), false)
@@ -212,7 +212,6 @@ local function onEveryOneMinute()
     local progress = StormUtils.getStormProgress()
     print("STORM PROGRESS", progress)
 
-    local weatherFactor = MasoStorm.Utils.getFadeInAndOutFactor(progress, 0, 1, 0.5)
     StormUtils.updateFakeSnowStorm(progress)
 
     if (progress > 0.3 and progress < 0.45) then
@@ -243,31 +242,15 @@ end
 Events.EveryOneMinute.Add(onEveryOneMinute)
 Events.OnGameStart.Add(onGameStart)
 
--- local tempCCI = ClimateColorInfo:new()
--- local crazyCCI = ClimateColorInfo:new()
-
 -- DEBUG ONLY
 local function onKeyPressed(key)
+    -- Key O to trigger event.
     if (key == 24) then
         print("client key code: ", key)
         StormState:reset()
     end
 
     if (key == 23) then
-    -- local c = getClimateManager():getClimateColor(0)
-
-    -- tempCCI:setTo(c:getInternalValue())
-
-    -- crazyCCI:setExterior(1, 0, 0, 1)
-
-    -- c:getInternalValue():interp(crazyCCI, 0.5, c:getInternalValue())
-
-    -- print(c:getInternalValue())
-    -- print("NEW: ", tempCCI)
-
-    -- getClimateManager():getClimateColor():getInternalValue():setTo(tempCCI)
-    -- print(tempCCI:getExterior())
-    -- print(getClimateManager():getClimateColor():getInternalValue():getExterior())
     end
 end
 
