@@ -1,0 +1,19 @@
+{
+  "Lua.diagnostics.globals": [
+    "Events",
+    "SandboxVars",
+    "ZombRand",
+    "getGameTime",
+    "ModData",
+    "isServer",
+    "isClient",
+    "getSoundManager",
+    "getClimateManager",
+    "WeatherPeriod",
+    "getPlayer",
+    "BodyPartType",
+    "getSearchMode",
+    "ISWorldObjectContextMenu",
+    "ClimateColorInfo"
+  ]
+}
