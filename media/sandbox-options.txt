@@ -25,9 +25,9 @@ option MasoStorm.maxDays
 option MasoStorm.duration
 {
 	type = double,
-	min = 0.5,
+	min = 3.0,
 	max = 72.0,
-	default = 1.0,
+	default = 3.0,
 
 	page = NatureOptions,
 	translation = MasoStormDuration,

@@ -214,22 +214,21 @@ local function onEveryOneMinute()
 
     StormUtils.updateFakeSnowStorm(progress)
 
-    if (progress > 0.3 and progress < 0.45) then
+    if (progress > 0.25 and progress < 0.45) then
         StormUtils.playRandomThunder(false, 25)
         StormUtils.applyPanic()
     end
 
-    if (progress > 0.4 and progress < 0.5) then
+    if (progress > 0.35 and progress < 0.5) then
         StormUtils.applyDamage()
     end
 
-    -- TODO: maybe these breakpoints are better as locals or constants.
     if (progress > 0.35 and progress < 0.6) then
         local factor = MasoStorm.Utils.getFadeInAndOutFactor(progress, 0.35, 0.6, 0.5)
         StormUtils.applyBlindess(factor)
     end
 
-    if (progress > 0.46 and progress < 0.5) then
+    if (progress > 0.49 and progress < 0.52) then
         StormUtils.playRandomThunder(true, 100)
         StormUtils.trip()
     end

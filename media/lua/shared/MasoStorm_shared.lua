@@ -41,9 +41,11 @@ local function getFadeInAndOutFactor(value, min, max, invertBreakpoint)
     return clamp(n / d, 0, 1)
 end
 
+local Settings = SandboxVars.MasoStorm
+
 MasoStorm = {
     ModDataNS = "MasoStorm",
-    Settings = SandboxVars.MasoStorm,
+    Settings = Settings,
     Utils = {
         timeout = timeout,
         clamp = clamp,
