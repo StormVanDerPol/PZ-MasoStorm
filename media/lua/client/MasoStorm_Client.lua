@@ -156,18 +156,18 @@ local StormUtils = {
     end,
     applyBlindess = function(factor)
         -- TODO: add gear that lessens the blindness effects
-
         local character = getPlayer()
+
+        if (factor == 0 or character:isDead()) then
+            getSearchMode():setEnabled(character:getPlayerNum(), false)
+        end
+
         local mode = getSearchMode():getSearchModeForPlayer(character:getPlayerNum())
         getSearchMode():setEnabled(character:getPlayerNum(), true)
         mode:getBlur():setTargets(factor, factor)
         mode:getDesat():setTargets(factor, factor)
         mode:getRadius():setTargets(5 / factor, 5 / factor)
         mode:getDarkness():setTargets(factor / 1.2, factor / 1.2)
-
-        if (factor == 0) then
-            getSearchMode():setEnabled(character:getPlayerNum(), false)
-        end
     end,
     trip = function()
         -- TODO: add gear to prevent tripping & fatigue gain
