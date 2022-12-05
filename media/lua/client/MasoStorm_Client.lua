@@ -25,6 +25,23 @@ local StormState = {
     init = false
 }
 
+local function getDefenses(player, holeIndex)
+    local biteDefense = luautils.round(player:getBodyPartClothingDefense(holeIndex, true, false))
+    local scratchDefense = luautils.round(player:getBodyPartClothingDefense(holeIndex, false, false))
+    local skinDefense = 20
+
+    if player:HasTrait("ThickSkinned") then
+        skinDefense = 50
+    end
+    if player:HasTrait("ThinSkinned") then
+        skinDefense = 0
+    end
+
+    biteDefense = math.floor(biteDefense)
+    scratchDefense = math.floor(scratchDefense)
+    return biteDefense, scratchDefense, skinDefense
+end
+
 local StormUtils = {
     getIsStormActive = function()
         local state = ClientUtils.get()
@@ -144,14 +161,22 @@ local StormUtils = {
         end
 
         local rng = ZombRand(10)
-        local randomPart = character:getBodyDamage():getBodyPart(BodyPartType.getRandom())
 
-        -- TODO: add gear to prevent damage.
+        local partIndex = ZombRand(BodyPartType.MAX:index())
+        local scratchDefense, biteDefense, skinDefense = getDefenses(character, partIndex)
+        local randomPart = character:getBodyDamage():getBodyPart(BodyPartType.FromIndex(partIndex))
 
+        character:Say("scratch: " .. tostring(scratchDefense) .. " bite: " .. tostring(biteDefense))
+
+        -- TODO: add (special) gear to prevent damage.
+        -- TODO: factor in gear in burn chance.
         if (MasoStorm.Settings.canBurn and rng == 0) then
             randomPart:setBurned()
-        elseif rng < 8 then
-            randomPart:AddDamage(ZombRand(10, 25) * MasoStorm.Settings.damageMultiplier)
+        else
+            local defenseModifier = 1 - ((scratchDefense * 2 + biteDefense + skinDefense) / 4) / 100
+
+            character:Say("defensemod: " .. tostring(defenseModifier))
+            randomPart:AddDamage(ZombRand(20, 30) * MasoStorm.Settings.damageMultiplier * defenseModifier)
         end
     end,
     applyBlindess = function(factor)
@@ -160,6 +185,7 @@ local StormUtils = {
 
         if (factor == 0 or character:isDead()) then
             getSearchMode():setEnabled(character:getPlayerNum(), false)
+            return
         end
 
         local mode = getSearchMode():getSearchModeForPlayer(character:getPlayerNum())
