@@ -59,54 +59,65 @@ local StormUtils = {
     end,
     initFakeSnowStorm = function()
         local climateManager = getClimateManager()
-        local climateColor = climateManager:getClimateColor(0)
-        local climateBool = climateManager:getClimateBool(0)
 
         -- forced snow
-        climateBool:setEnableModded(true)
-        climateBool:setModdedValue(true)
+        local isSnow = climateManager:getClimateBool(ClimateManager.BOOL_IS_SNOW)
+        isSnow:setEnableModded(true)
+        isSnow:setModdedValue(true)
 
         climateManager:stopWeatherAndThunder()
-        climateManager:triggerCustomWeatherStage(WeatherPeriod.STAGE_STORM, MasoStorm.Settings.duration - 2)
+        climateManager:triggerCustomWeatherStage(WeatherPeriod.STAGE_TROPICAL_STORM, MasoStorm.Settings.duration - 2)
 
+        -- TODO: remove fog from weather. Only adminValue seems to be a true override.
+        -- Maybe we can make a new WeatherStage somehow?
+        -- local fogIntensity = climateManager:getClimateFloat(ClimateManager.FLOAT_FOG_INTENSITY)
+        -- fogIntensity:setEnableModded(true)
+        -- fogIntensity:setModdedValue(0)
+        -- fogIntensity:setModdedInterpolate(1)
+
+        local globalLight = climateManager:getClimateColor(ClimateManager.COLOR_GLOBAL_LIGHT)
         -- We're going to interpolate from and back to this value.
         -- IDK how to get the value of whatever its GOING to be in the future.
         -- The moment you use modded climate, whatever the weather system is doing is lost
         -- This means that if the actual ClimateColorInfo is very different from what we stored things are going to be awkward
         -- A fix for this would be appreciated.
         StormState.preStormClimateColorInfo = ClimateColorInfo:new()
-        StormState.preStormClimateColorInfo:setTo(climateColor:getInternalValue())
+        StormState.preStormClimateColorInfo:setTo(globalLight:getInternalValue())
         -- Actual red sky CCI
         StormState.redSkyClimateColorInfo = ClimateColorInfo:new()
         StormState.redSkyClimateColorInfo:setExterior(1, 0, 0, 1)
         StormState.redSkyClimateColorInfo:setInterior(1, 0, 0, 0.7)
         -- The one we'll render
-        climateColor:getModdedValue():setTo(climateColor:getInternalValue())
-        climateColor:setModdedInterpolate(1)
-        climateColor:setEnableModded(true)
+        globalLight:getModdedValue():setTo(globalLight:getInternalValue())
+        globalLight:setModdedInterpolate(1)
+        globalLight:setEnableModded(true)
     end,
     updateFakeSnowStorm = function(progress)
-        local climateColor = getClimateManager():getClimateColor(0)
+        local globalLight = getClimateManager():getClimateColor(ClimateManager.COLOR_GLOBAL_LIGHT)
 
         local factor = MasoStorm.Utils.getFadeInAndOutFactor(progress, 0, 1, 0.5)
 
         StormState.preStormClimateColorInfo:interp(
             StormState.redSkyClimateColorInfo,
             factor,
-            climateColor:getModdedValue()
+            globalLight:getModdedValue()
         )
     end,
     cleanupFakeSnowStorm = function()
         local climateManager = getClimateManager()
-        local climateBool = climateManager:getClimateBool(0)
-        local climateColor = climateManager:getClimateColor(0)
 
         -- Snow
-        climateBool:setModdedValue(false)
-        climateBool:setEnableModded(false)
+        local isSnow = climateManager:getClimateBool(ClimateManager.BOOL_IS_SNOW)
+        isSnow:setModdedValue(false)
+        isSnow:setEnableModded(false)
 
         -- Back to vanilla colours
-        climateColor:setEnableModded(false)
+        local globalLight = climateManager:getClimateColor(ClimateManager.COLOR_GLOBAL_LIGHT)
+        globalLight:setEnableModded(false)
+
+        -- le fog (doensnt help)
+        -- local fogIntensity = climateManager:getClimateFloat(ClimateManager.FLOAT_FOG_INTENSITY)
+        -- fogIntensity:setEnableModded(false)
 
         -- Stop storm, since it would turn into rain which looks a little awkward
         climateManager:stopWeatherAndThunder()
@@ -154,8 +165,6 @@ local StormUtils = {
         mode:getRadius():setTargets(5 / factor, 5 / factor)
         mode:getDarkness():setTargets(factor / 1.2, factor / 1.2)
 
-        -- getPlayer():Say(tostring(factor))
-
         if (factor == 0) then
             getSearchMode():setEnabled(character:getPlayerNum(), false)
         end
@@ -179,7 +188,7 @@ local StormUtils = {
         modData.hasTripped = true
 
         local stats = character:getStats()
-        stats:setFatigue(stats:getFatigue() + 25)
+        stats:setFatigue(stats:getFatigue() + 0.25)
     end,
     initOrCleanupTrip = function()
         local character = getPlayer()
@@ -215,7 +224,7 @@ local function onEveryOneMinute()
     StormUtils.updateFakeSnowStorm(progress)
 
     if (progress > 0.25 and progress < 0.45) then
-        StormUtils.playRandomThunder(false, 25)
+        StormUtils.playRandomThunder(false, 10)
         StormUtils.applyPanic()
     end
 
@@ -228,7 +237,7 @@ local function onEveryOneMinute()
         StormUtils.applyBlindess(factor)
     end
 
-    if (progress > 0.49 and progress < 0.52) then
+    if (progress > 0.49 and progress < 0.51) then
         StormUtils.playRandomThunder(true, 100)
         StormUtils.trip()
     end
