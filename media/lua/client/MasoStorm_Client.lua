@@ -176,7 +176,7 @@ local StormUtils = {
             local defenseModifier = 1 - ((scratchDefense * 2 + biteDefense + skinDefense) / 4) / 100
 
             character:Say("defensemod: " .. tostring(defenseModifier))
-            randomPart:AddDamage(ZombRand(20, 30) * MasoStorm.Settings.damageMultiplier * defenseModifier)
+            randomPart:AddDamage(ZombRand(10, 25) * MasoStorm.Settings.damageMultiplier * defenseModifier)
         end
     end,
     applyBlindess = function(factor)
