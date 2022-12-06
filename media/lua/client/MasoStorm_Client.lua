@@ -83,7 +83,7 @@ local StormUtils = {
         isSnow:setModdedValue(true)
 
         climateManager:stopWeatherAndThunder()
-        climateManager:triggerCustomWeatherStage(WeatherPeriod.STAGE_TROPICAL_STORM, MasoStorm.Settings.duration - 2)
+        climateManager:triggerCustomWeatherStage(WeatherPeriod.STAGE_STORM, MasoStorm.Settings.duration - 2)
 
         -- TODO: remove fog from weather. Only adminValue seems to be a true override.
         -- Maybe we can make a new WeatherStage somehow?
@@ -103,16 +103,14 @@ local StormUtils = {
         -- Actual red sky CCI
         StormState.redSkyClimateColorInfo = ClimateColorInfo:new()
         StormState.redSkyClimateColorInfo:setExterior(1, 0, 0, 1)
-        StormState.redSkyClimateColorInfo:setInterior(1, 0, 0, 0.7)
+        StormState.redSkyClimateColorInfo:setInterior(0.8, 0.1, 0.1, 0.7)
         -- The one we'll render
         globalLight:getModdedValue():setTo(globalLight:getInternalValue())
         globalLight:setModdedInterpolate(1)
         globalLight:setEnableModded(true)
     end,
-    updateFakeSnowStorm = function(progress)
+    updateFakeSnowStorm = function(factor)
         local globalLight = getClimateManager():getClimateColor(ClimateManager.COLOR_GLOBAL_LIGHT)
-
-        local factor = MasoStorm.Utils.getFadeInAndOutFactor(progress, 0, 1, 0.5)
 
         StormState.preStormClimateColorInfo:interp(
             StormState.redSkyClimateColorInfo,
@@ -136,23 +134,22 @@ local StormUtils = {
         -- local fogIntensity = climateManager:getClimateFloat(ClimateManager.FLOAT_FOG_INTENSITY)
         -- fogIntensity:setEnableModded(false)
 
-        -- Stop storm, since it would turn into rain which looks a little awkward
-        climateManager:stopWeatherAndThunder()
+        -- climateManager:stopWeatherAndThunder()
     end,
     applyPanic = function()
         local character = getPlayer()
         local stats = character:getStats()
         local panic = stats:getPanic()
-        local increment = 14
+        local increment = 20
 
         -- Less panic indoors
         if (not character:isOutside() or character:getVehicle()) then
-            increment = 4
+            increment = 10
         end
 
         if (character:isAsleep()) then
             character:forceAwake()
-            increment = 28
+            increment = 40
         end
 
         stats:setPanic(math.min(panic + increment, 100))
@@ -179,12 +176,11 @@ local StormUtils = {
             randomPart:setBurned()
         else
             local defenseModifier = 1 - ((scratchDefense * 2 + biteDefense + skinDefense) / 4) / 100
-
-            character:Say("defensemod: " .. tostring(defenseModifier))
+            -- character:Say("defensemod: " .. tostring(defenseModifier))
             randomPart:AddDamage(ZombRand(10, 25) * MasoStorm.Settings.damageMultiplier * defenseModifier)
         end
     end,
-    applyBlindess = function(factor)
+    applyBlindness = function(factor)
         -- TODO: add gear that lessens the blindness effects
         local character = getPlayer()
 
@@ -207,7 +203,7 @@ local StormUtils = {
         local modData = character:getModData()
 
         -- Let's make sure the player doesn't trip more than once.
-        if modData.hasTripped then
+        if modData.hasTripped or character:isSitOnGround() then
             return
         end
 
@@ -235,10 +231,9 @@ local function onEveryOneMinute()
     if (not isStormActive) then
         if (StormState.init) then
             -- Unitialize
-            StormUtils.cleanupFakeSnowStorm()
             StormState:reset()
         end
-        -- Quit
+
         return
     end
 
@@ -252,25 +247,29 @@ local function onEveryOneMinute()
     local progress = StormUtils.getStormProgress()
     print("STORM PROGRESS", progress)
 
-    StormUtils.updateFakeSnowStorm(progress)
+    -- local weatherFactor = MasoStorm.Utils.getFadeInAndOutFactor(progress, 0.25, 0.55, 0.5)
+    local weatherFactor = MasoStorm.Utils.getFactor(progress, 0.25, 0.5)
+    StormUtils.updateFakeSnowStorm(weatherFactor)
 
-    if (progress > 0.25 and progress < 0.5) then
-        StormUtils.playRandomThunder(false, 10)
+    -- getPlayer():Say("weather factor: " .. tostring(weatherFactor))
+
+    if (progress > 0.35 and progress < 0.55) then
+        StormUtils.playRandomThunder(false, 35)
         StormUtils.applyPanic()
     end
 
-    if (progress > 0.35 and progress < 0.5) then
+    if (progress > 0.45 and progress < 0.55) then
+        StormUtils.playRandomThunder(true, 75)
         StormUtils.applyDamage()
     end
 
-    if (progress > 0.35 and progress < 0.6) then
-        local factor = MasoStorm.Utils.getFadeInAndOutFactor(progress, 0.35, 0.6, 0.5)
-        StormUtils.applyBlindess(factor)
-    end
+    if (progress > 0.45 and progress < 0.6) then
+        local factor = MasoStorm.Utils.getFadeInAndOutFactor(progress, 0.45, 0.6, 0.55)
+        StormUtils.applyBlindness(factor)
 
-    if (progress > 0.49 and progress < 0.51) then
-        StormUtils.playRandomThunder(true, 100)
-        StormUtils.trip()
+        if (factor > 0.95) then
+            StormUtils.trip()
+        end
     end
 end
 
