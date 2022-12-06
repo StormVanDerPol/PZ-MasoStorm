@@ -150,7 +150,12 @@ local StormUtils = {
             increment = 4
         end
 
-        stats:setPanic(panic + increment)
+        if (character:isAsleep()) then
+            character:forceAwake()
+            increment = 28
+        end
+
+        stats:setPanic(math.min(panic + increment, 100))
     end,
     applyDamage = function()
         local character = getPlayer()
@@ -249,7 +254,7 @@ local function onEveryOneMinute()
 
     StormUtils.updateFakeSnowStorm(progress)
 
-    if (progress > 0.25 and progress < 0.45) then
+    if (progress > 0.25 and progress < 0.5) then
         StormUtils.playRandomThunder(false, 10)
         StormUtils.applyPanic()
     end
