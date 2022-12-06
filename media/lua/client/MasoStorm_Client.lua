@@ -251,6 +251,12 @@ local function onEveryOneMinute()
     local weatherFactor = MasoStorm.Utils.getFactor(progress, 0.25, 0.5)
     StormUtils.updateFakeSnowStorm(weatherFactor)
 
+    if (weatherFactor == 1 and progress >= 0.55 and progress < 0.6) then
+        StormUtils.trip()
+        StormUtils.cleanupFakeSnowStorm()
+        StormUtils.playRandomThunder(true, 100)
+    end
+
     -- getPlayer():Say("weather factor: " .. tostring(weatherFactor))
 
     if (progress > 0.35 and progress < 0.55) then
@@ -266,10 +272,6 @@ local function onEveryOneMinute()
     if (progress > 0.45 and progress < 0.6) then
         local factor = MasoStorm.Utils.getFadeInAndOutFactor(progress, 0.45, 0.6, 0.55)
         StormUtils.applyBlindness(factor)
-
-        if (factor > 0.95) then
-            StormUtils.trip()
-        end
     end
 end
 
