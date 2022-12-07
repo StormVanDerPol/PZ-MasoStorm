@@ -17,7 +17,7 @@ local ServerUtils = {
         local days = ZombRand(MasoStorm.Settings.minDays, MasoStorm.Settings.maxDays)
         local triggerTime = getGameTime():getWorldAgeHours() + (days * 24.0) - 24 + hours
 
-        print("GENERATING NEW TRIGGER TIME", "trigger time: ", triggerTime, " | days: ", days, " | hours: ", hours)
+        -- print("GENERATING NEW TRIGGER TIME", "trigger time: ", triggerTime, " | days: ", days, " | hours: ", hours)
 
         return triggerTime
     end
@@ -49,16 +49,16 @@ Events.OnInitGlobalModData.Add(onInitGlobalModData)
 Events.EveryHours.Add(onEveryHours)
 
 -- DEBUG ONLY
-local function onKeyPressed(key)
-    -- Key O to trigger event.
-    if (key == 24) then
-        print("server key code: ", key)
+-- local function onKeyPressed(key)
+--     -- Key O to trigger event.
+--     if (key == 24) then
+--         print("server key code: ", key)
 
-        local state = ServerUtils.getModData()
-        state.hour = getGameTime():getWorldAgeHours()
+--         local state = ServerUtils.getModData()
+--         state.hour = getGameTime():getWorldAgeHours()
 
-        ServerUtils.transmit(state)
-    end
-end
+--         ServerUtils.transmit(state)
+--     end
+-- end
 
-Events.OnKeyPressed.Add(onKeyPressed)
+-- Events.OnKeyPressed.Add(onKeyPressed)

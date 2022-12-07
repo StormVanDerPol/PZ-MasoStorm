@@ -49,7 +49,7 @@ local StormUtils = {
 
         local isStormActive = ((currentHour > state.hour) and (currentHour < state.hour + MasoStorm.Settings.duration))
 
-        print("IS STORM ACTIVE: ", isStormActive, " | ", state.hour, " | ", currentHour)
+        -- print("IS STORM ACTIVE: ", isStormActive, " | ", state.hour, " | ", currentHour)
 
         return isStormActive
     end,
@@ -245,7 +245,7 @@ local function onEveryOneMinute()
     end
 
     local progress = StormUtils.getStormProgress()
-    print("STORM PROGRESS", progress)
+    -- print("STORM PROGRESS", progress)
 
     -- local weatherFactor = MasoStorm.Utils.getFadeInAndOutFactor(progress, 0.25, 0.55, 0.5)
     local weatherFactor = MasoStorm.Utils.getFactor(progress, 0.25, 0.5)
@@ -283,15 +283,15 @@ Events.EveryOneMinute.Add(onEveryOneMinute)
 Events.OnGameStart.Add(onGameStart)
 
 -- DEBUG ONLY
-local function onKeyPressed(key)
-    -- Key O to trigger event.
-    if (key == 24) then
-        print("client key code: ", key)
-        StormState:reset()
-    end
+-- local function onKeyPressed(key)
+--     -- Key O to trigger event.
+--     if (key == 24) then
+--         print("client key code: ", key)
+--         StormState:reset()
+--     end
 
-    if (key == 23) then
-    end
-end
+--     if (key == 23) then
+--     end
+-- end
 
-Events.OnKeyPressed.Add(onKeyPressed)
+-- Events.OnKeyPressed.Add(onKeyPressed)
