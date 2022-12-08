@@ -1,6 +1,16 @@
 local MasoStorm = MasoStorm
 local ZombRand = ZombRand
-local ClientUtils = MasoStorm.ClientUtils
+
+local ClientUtils = {
+    request = function()
+        if isClient() then
+            ModData.request(MasoStorm.ModDataNS)
+        end
+    end,
+    get = function()
+        return ModData.get(MasoStorm.ModDataNS)
+    end
+}
 
 -- state
 local StormState = {
@@ -106,14 +116,15 @@ local StormUtils = {
 }
 
 local function onEveryOneMinute()
-    local isStormActive = MasoStorm.Utils.getIsStormActive()
+    local state = ClientUtils.get()
+    local isStormActive = MasoStorm.Utils.getIsStormActive(state.hour)
 
     if (not isStormActive) then
         StormState:reset()
         return
     end
 
-    local progress = MasoStorm.Utils.getStormProgress()
+    local progress = MasoStorm.Utils.getStormProgress(state.hour)
 
     if (progress > 0.35 and progress < 0.55) then
         StormUtils.playRandomThunder(false, 35)
@@ -167,7 +178,9 @@ end
 Events.OnKeyPressed.Add(onKeyPressed)
 
 local function onReceiveGlobalModData(key, modData)
-    getPlayer():Say("received md: " .. key)
+    if key == MasoStorm.ModDataNS then
+        getPlayer():Say("received md: " .. key)
+    end
 end
 
 Events.OnReceiveGlobalModData.Add(onReceiveGlobalModData)

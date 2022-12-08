@@ -65,65 +65,20 @@ local function getDefenses(player, holeIndex)
     return biteDefense, scratchDefense, skinDefense
 end
 
-local Settings = SandboxVars.MasoStorm
-local ModDataNS = "MasoStorm"
-
-local ServerUtils = {
-    transmit = function(state)
-        ModData.add(MasoStorm.ModDataNS, state)
-        if isServer() then
-            ModData.transmit(MasoStorm.ModDataNS)
-        end
-    end,
-    get = function()
-        if isServer() then
-            return ModData.getOrCreate(MasoStorm.ModDataNS)
-        end
-    end,
-    getTriggerTime = function()
-        local hours = ZombRand(0, 24)
-        local days = ZombRand(MasoStorm.Settings.minDays, MasoStorm.Settings.maxDays)
-        local triggerTime = getGameTime():getWorldAgeHours() + (days * 24.0) - 24 + hours
-        return triggerTime
-    end
-}
-
-local ClientUtils = {
-    request = function()
-        if isClient() then
-            ModData.request(MasoStorm.ModDataNS)
-        end
-    end,
-    get = function()
-        return ModData.get(MasoStorm.ModDataNS)
-    end
-}
-
-local function getIsStormActive()
-    local state = nil
-    if isServer() then
-        state = ServerUtils.get()
-    elseif isClient() then
-        state = ClientUtils.get()
-    end
-
+local function getIsStormActive(stormHour)
     local currentHour = getGameTime():getWorldAgeHours()
-    local isStormActive = ((currentHour > state.hour) and (currentHour < state.hour + MasoStorm.Settings.duration))
+    local isStormActive = ((currentHour > stormHour) and (currentHour < stormHour + MasoStorm.Settings.duration))
     return isStormActive
 end
 
-local function getStormProgress()
-    local state = nil
-    if isServer() then
-        state = ServerUtils.get()
-    elseif isClient() then
-        state = ClientUtils.get()
-    end
-
+local function getStormProgress(stormHour)
     local currentHour = getGameTime():getWorldAgeHours()
-    local normalizedCurrentHour = currentHour - state.hour
+    local normalizedCurrentHour = currentHour - stormHour
     return MasoStorm.Utils.clamp(normalizedCurrentHour / MasoStorm.Settings.duration, 0, 1)
 end
+
+local Settings = SandboxVars.MasoStorm
+local ModDataNS = "MasoStorm"
 
 MasoStorm = {
     ModDataNS = ModDataNS,
@@ -136,7 +91,5 @@ MasoStorm = {
         getStormProgress = getStormProgress,
         getIsStormActive = getIsStormActive,
         getDefenses = getDefenses
-    },
-    ServerUtils = ServerUtils,
-    ClientUtils = ClientUtils
+    }
 }

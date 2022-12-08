@@ -1,5 +1,22 @@
 local MasoStorm = MasoStorm
-local ServerUtils = MasoStorm.ServerUtils
+
+local ServerUtils = {
+    transmit = function(state)
+        ModData.add(MasoStorm.ModDataNS, state)
+        if isServer() then
+            ModData.transmit(MasoStorm.ModDataNS)
+        end
+    end,
+    get = function()
+        return ModData.getOrCreate(MasoStorm.ModDataNS)
+    end,
+    getTriggerTime = function()
+        local hours = ZombRand(0, 24)
+        local days = ZombRand(MasoStorm.Settings.minDays, MasoStorm.Settings.maxDays)
+        local triggerTime = getGameTime():getWorldAgeHours() + (days * 24.0) - 24 + hours
+        return triggerTime
+    end
+}
 
 local StormState = {
     reset = function(self)
@@ -81,12 +98,14 @@ local function onEveryHours()
     end
 end
 
+-- Handle weather
 local function onEveryOneMinute()
-    local isStormActive = MasoStorm.Utils.getIsStormActive()
+    local state = ServerUtils.get()
+
+    local isStormActive = MasoStorm.Utils.getIsStormActive(state.hour)
 
     if (not isStormActive) then
         if (StormState.init) then
-            StormUtils.cleanupFakeSnowStorm()
             StormState:reset()
         end
         return
@@ -95,16 +114,18 @@ local function onEveryOneMinute()
     -- Initialize
     if (not StormState.init) then
         -- Sync for good measure
-        local state = ServerUtils.get()
         ServerUtils.transmit(state)
-
         StormState.init = true
         StormUtils.initFakeSnowStorm()
     end
 
-    local progress = MasoStorm.Utils.getStormProgress()
+    local progress = MasoStorm.Utils.getStormProgress(state.hour)
     local weatherFactor = MasoStorm.Utils.getFactor(progress, 0.25, 0.5)
     StormUtils.updateFakeSnowStorm(weatherFactor)
+
+    if (weatherFactor == 1 and progress >= 0.55 and progress < 0.6) then
+        StormUtils.cleanupFakeSnowStorm()
+    end
 end
 
 -- Just for good measure
