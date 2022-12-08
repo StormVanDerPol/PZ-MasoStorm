@@ -13,7 +13,11 @@ local ServerUtils = {
     getTriggerTime = function()
         local hours = ZombRand(0, 24)
         local days = ZombRand(MasoStorm.Settings.minDays, MasoStorm.Settings.maxDays)
-        local triggerTime = math.max(1, getGameTime():getWorldAgeHours() + (days * 24.0) - 24 + hours)
+        local triggerTime =
+            math.max(
+            getGameTime():getWorldAgeHours() + 1,
+            getGameTime():getWorldAgeHours() + (days * 24.0) - 24 + hours
+        )
         return triggerTime
     end
 }
