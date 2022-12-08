@@ -157,6 +157,7 @@ local function onReceiveGlobalModData(key, modData)
 
     local state = ServerUtils.get()
     state = modData
+    StormState:reset()
     ServerUtils.transmit(state)
 end
 
