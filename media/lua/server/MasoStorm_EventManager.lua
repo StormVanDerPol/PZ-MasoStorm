@@ -51,8 +51,8 @@ local StormUtils = {
         StormState.preStormClimateColorInfo:setTo(globalLight:getInternalValue())
         -- Actual red sky CCI
         StormState.redSkyClimateColorInfo = ClimateColorInfo:new()
-        StormState.redSkyClimateColorInfo:setExterior(1, 0, 0, 1)
-        StormState.redSkyClimateColorInfo:setInterior(0.8, 0.1, 0.1, 0.7)
+        StormState.redSkyClimateColorInfo:setExterior(1, 0.1, 0.1, 0.8)
+        StormState.redSkyClimateColorInfo:setInterior(0.7, 0.2, 0.2, 0.5)
 
         -- We're using the admin value because while i originally used modded, it's too inconsistent.
         -- Todo: maybe we can use ClimateFloat instead to imperatively enable rain & wind instead of relying on the weather system?
@@ -130,7 +130,7 @@ local function onEveryOneMinute()
     ServerUtils.transmit(state)
 
     local progress = MasoStorm.Utils.getStormProgress(state.hour)
-    local weatherFactor = MasoStorm.Utils.getFactor(progress, 0.25, 0.5)
+    local weatherFactor = MasoStorm.Utils.getFadeInAndOutFactor(progress, 0.25, 0.6, 0.55)
     StormUtils.updateFakeSnowStorm(weatherFactor)
 
     if (weatherFactor == 1 and progress >= 0.55 and progress < 0.6) then

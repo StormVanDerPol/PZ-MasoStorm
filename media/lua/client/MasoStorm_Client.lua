@@ -101,7 +101,7 @@ local StormUtils = {
         local character = getPlayer()
 
         -- Let's make sure the player doesn't trip more than once.
-        if StormState.hasTripped or character:isSitOnGround() then
+        if StormState.hasTripped or not character:isOutside() or character:getVehicle() then
             return
         end
 
@@ -110,7 +110,11 @@ local StormUtils = {
         character:setBumpType("stagger")
         character:setVariable("BumpDone", false)
         character:setVariable("BumpFall", true)
-        character:setVariable("BumpFallType", "pushedFront")
+        if (ZombRand(0, 10) < 5) then
+            character:setVariable("BumpFallType", "pushedFront")
+        else
+            character:setVariable("BumpFallType", "pushedBehind")
+        end
 
         local stats = character:getStats()
         stats:setFatigue(stats:getFatigue() + 0.25)
