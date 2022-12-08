@@ -143,7 +143,7 @@ local function onEveryOneMinute()
         StormUtils.applyBlindness(factor)
     end
 
-    if (progress >= 0.55) then
+    if (progress >= 0.55 and progress < 0.6) then
         StormUtils.trip()
     end
 end
