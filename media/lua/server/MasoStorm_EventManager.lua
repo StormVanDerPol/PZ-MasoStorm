@@ -53,10 +53,15 @@ local StormUtils = {
         StormState.redSkyClimateColorInfo = ClimateColorInfo:new()
         StormState.redSkyClimateColorInfo:setExterior(1, 0, 0, 1)
         StormState.redSkyClimateColorInfo:setInterior(0.8, 0.1, 0.1, 0.7)
-        -- The one we'll render
-        globalLight:getModdedValue():setTo(globalLight:getInternalValue())
-        globalLight:setModdedInterpolate(1)
-        globalLight:setEnableModded(true)
+
+        -- We're using the admin value because while i originally used modded, it's too inconsistent.
+        -- Todo: maybe we can use ClimateFloat instead to imperatively enable rain & wind instead of relying on the weather system?
+        -- globalLight:getModdedValue():setTo(globalLight:getInternalValue())
+        -- globalLight:setModdedInterpolate(1)
+        -- globalLight:setEnableModded(true)
+
+        globalLight:getAdminValue():setTo(globalLight:getInternalValue())
+        globalLight:setEnableAdmin(true)
     end,
     updateFakeSnowStorm = function(factor)
         local globalLight = getClimateManager():getClimateColor(ClimateManager.COLOR_GLOBAL_LIGHT)
@@ -64,7 +69,7 @@ local StormUtils = {
         StormState.preStormClimateColorInfo:interp(
             StormState.redSkyClimateColorInfo,
             factor,
-            globalLight:getModdedValue()
+            globalLight:getAdminValue()
         )
     end,
     cleanupFakeSnowStorm = function()
@@ -77,7 +82,7 @@ local StormUtils = {
 
         -- Back to vanilla colours
         local globalLight = climateManager:getClimateColor(ClimateManager.COLOR_GLOBAL_LIGHT)
-        globalLight:setEnableModded(false)
+        globalLight:setEnableAdmin(false)
     end
 }
 
