@@ -17,6 +17,7 @@
     "ClimateColorInfo",
     "ClimateManager",
     "luautils",
-    "BloodBodyPartType"
+    "BloodBodyPartType",
+    "isAdmin"
   ]
 }

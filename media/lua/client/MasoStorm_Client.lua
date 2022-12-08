@@ -1,66 +1,16 @@
 local MasoStorm = MasoStorm
-local print = print
 local ZombRand = ZombRand
+local ClientUtils = MasoStorm.ClientUtils
 
-local ClientUtils = {
-    request = function()
-        if isClient() then
-            ModData.request(MasoStorm.ModDataNS)
-        end
-    end,
-    get = function()
-        return ModData.get(MasoStorm.ModDataNS)
-    end
-}
-
--- I pray I dont need to use u much
+-- state
 local StormState = {
     reset = function(self)
-        self.init = false
-        self.preStormClimateColorInfo = nil
-        self.redSkyClimateColorInfo = nil
+        self.hasTripped = false
     end,
-    preStormClimateColorInfo = nil,
-    redSkyClimateColorInfo = nil,
-    init = false
+    hasTripped = false
 }
 
-local function getDefenses(player, holeIndex)
-    local biteDefense = luautils.round(player:getBodyPartClothingDefense(holeIndex, true, false))
-    local scratchDefense = luautils.round(player:getBodyPartClothingDefense(holeIndex, false, false))
-    local skinDefense = 20
-
-    if player:HasTrait("ThickSkinned") then
-        skinDefense = 50
-    end
-    if player:HasTrait("ThinSkinned") then
-        skinDefense = 0
-    end
-
-    biteDefense = math.floor(biteDefense)
-    scratchDefense = math.floor(scratchDefense)
-    return biteDefense, scratchDefense, skinDefense
-end
-
 local StormUtils = {
-    getIsStormActive = function()
-        local state = ClientUtils.get()
-        local currentHour = getGameTime():getWorldAgeHours()
-
-        local isStormActive = ((currentHour > state.hour) and (currentHour < state.hour + MasoStorm.Settings.duration))
-
-        -- print("IS STORM ACTIVE: ", isStormActive, " | ", state.hour, " | ", currentHour)
-
-        return isStormActive
-    end,
-    getStormProgress = function()
-        local state = ClientUtils.get()
-        local currentHour = getGameTime():getWorldAgeHours()
-
-        local normalizedCurrentHour = currentHour - state.hour
-
-        return MasoStorm.Utils.clamp(normalizedCurrentHour / MasoStorm.Settings.duration, 0, 1)
-    end,
     playRandomThunder = function(isSevere, chance)
         if (ZombRand(0, 100) > chance) then
             return
@@ -73,68 +23,6 @@ local StormUtils = {
         end
 
         getSoundManager():PlaySound(thunderSound, false, 0)
-    end,
-    initFakeSnowStorm = function()
-        local climateManager = getClimateManager()
-
-        -- forced snow
-        local isSnow = climateManager:getClimateBool(ClimateManager.BOOL_IS_SNOW)
-        isSnow:setEnableModded(true)
-        isSnow:setModdedValue(true)
-
-        climateManager:stopWeatherAndThunder()
-        climateManager:triggerCustomWeatherStage(WeatherPeriod.STAGE_STORM, MasoStorm.Settings.duration - 2)
-
-        -- TODO: remove fog from weather. Only adminValue seems to be a true override.
-        -- Maybe we can make a new WeatherStage somehow?
-        -- local fogIntensity = climateManager:getClimateFloat(ClimateManager.FLOAT_FOG_INTENSITY)
-        -- fogIntensity:setEnableModded(true)
-        -- fogIntensity:setModdedValue(0)
-        -- fogIntensity:setModdedInterpolate(1)
-
-        local globalLight = climateManager:getClimateColor(ClimateManager.COLOR_GLOBAL_LIGHT)
-        -- We're going to interpolate from and back to this value.
-        -- IDK how to get the value of whatever its GOING to be in the future.
-        -- The moment you use modded climate, whatever the weather system is doing is lost
-        -- This means that if the actual ClimateColorInfo is very different from what we stored things are going to be awkward
-        -- A fix for this would be appreciated.
-        StormState.preStormClimateColorInfo = ClimateColorInfo:new()
-        StormState.preStormClimateColorInfo:setTo(globalLight:getInternalValue())
-        -- Actual red sky CCI
-        StormState.redSkyClimateColorInfo = ClimateColorInfo:new()
-        StormState.redSkyClimateColorInfo:setExterior(1, 0, 0, 1)
-        StormState.redSkyClimateColorInfo:setInterior(0.8, 0.1, 0.1, 0.7)
-        -- The one we'll render
-        globalLight:getModdedValue():setTo(globalLight:getInternalValue())
-        globalLight:setModdedInterpolate(1)
-        globalLight:setEnableModded(true)
-    end,
-    updateFakeSnowStorm = function(factor)
-        local globalLight = getClimateManager():getClimateColor(ClimateManager.COLOR_GLOBAL_LIGHT)
-
-        StormState.preStormClimateColorInfo:interp(
-            StormState.redSkyClimateColorInfo,
-            factor,
-            globalLight:getModdedValue()
-        )
-    end,
-    cleanupFakeSnowStorm = function()
-        local climateManager = getClimateManager()
-
-        -- Snow
-        local isSnow = climateManager:getClimateBool(ClimateManager.BOOL_IS_SNOW)
-        isSnow:setModdedValue(false)
-        isSnow:setEnableModded(false)
-
-        -- Back to vanilla colours
-        local globalLight = climateManager:getClimateColor(ClimateManager.COLOR_GLOBAL_LIGHT)
-        globalLight:setEnableModded(false)
-
-        -- le fog (doensnt help)
-        -- local fogIntensity = climateManager:getClimateFloat(ClimateManager.FLOAT_FOG_INTENSITY)
-        -- fogIntensity:setEnableModded(false)
-
-        -- climateManager:stopWeatherAndThunder()
     end,
     applyPanic = function()
         local character = getPlayer()
@@ -165,7 +53,7 @@ local StormUtils = {
         local rng = ZombRand(10)
 
         local partIndex = ZombRand(BodyPartType.MAX:index())
-        local scratchDefense, biteDefense, skinDefense = getDefenses(character, partIndex)
+        local scratchDefense, biteDefense, skinDefense = MasoStorm.Utils.getDefenses(character, partIndex)
         local randomPart = character:getBodyDamage():getBodyPart(BodyPartType.FromIndex(partIndex))
 
         character:Say("scratch: " .. tostring(scratchDefense) .. " bite: " .. tostring(biteDefense))
@@ -198,66 +86,34 @@ local StormUtils = {
     end,
     trip = function()
         -- TODO: add gear to prevent tripping & fatigue gain
-
         local character = getPlayer()
-        local modData = character:getModData()
 
         -- Let's make sure the player doesn't trip more than once.
-        if modData.hasTripped or character:isSitOnGround() then
+        if StormState.hasTripped or character:isSitOnGround() then
             return
         end
+
+        StormState.hasTripped = true
 
         character:setBumpType("stagger")
         character:setVariable("BumpDone", false)
         character:setVariable("BumpFall", true)
         character:setVariable("BumpFallType", "pushedFront")
 
-        modData.hasTripped = true
-
         local stats = character:getStats()
         stats:setFatigue(stats:getFatigue() + 0.25)
-    end,
-    initOrCleanupTrip = function()
-        local character = getPlayer()
-        local modData = character:getModData()
-
-        modData.hasTripped = false
     end
 }
 
 local function onEveryOneMinute()
-    local isStormActive = StormUtils.getIsStormActive()
+    local isStormActive = MasoStorm.Utils.getIsStormActive()
 
     if (not isStormActive) then
-        if (StormState.init) then
-            -- Unitialize
-            StormState:reset()
-        end
-
+        StormState:reset()
         return
     end
 
-    -- Initialize
-    if (not StormState.init) then
-        StormState.init = true
-        StormUtils.initFakeSnowStorm()
-        StormUtils.initOrCleanupTrip()
-    end
-
-    local progress = StormUtils.getStormProgress()
-    -- print("STORM PROGRESS", progress)
-
-    -- local weatherFactor = MasoStorm.Utils.getFadeInAndOutFactor(progress, 0.25, 0.55, 0.5)
-    local weatherFactor = MasoStorm.Utils.getFactor(progress, 0.25, 0.5)
-    StormUtils.updateFakeSnowStorm(weatherFactor)
-
-    if (weatherFactor == 1 and progress >= 0.55 and progress < 0.6) then
-        StormUtils.trip()
-        StormUtils.cleanupFakeSnowStorm()
-        StormUtils.playRandomThunder(true, 100)
-    end
-
-    -- getPlayer():Say("weather factor: " .. tostring(weatherFactor))
+    local progress = MasoStorm.Utils.getStormProgress()
 
     if (progress > 0.35 and progress < 0.55) then
         StormUtils.playRandomThunder(false, 35)
@@ -273,6 +129,10 @@ local function onEveryOneMinute()
         local factor = MasoStorm.Utils.getFadeInAndOutFactor(progress, 0.45, 0.6, 0.55)
         StormUtils.applyBlindness(factor)
     end
+
+    if (progress >= 0.55) then
+        StormUtils.trip()
+    end
 end
 
 local function onGameStart()
@@ -282,16 +142,32 @@ end
 Events.EveryOneMinute.Add(onEveryOneMinute)
 Events.OnGameStart.Add(onGameStart)
 
--- DEBUG ONLY
--- local function onKeyPressed(key)
---     -- Key O to trigger event.
---     if (key == 24) then
---         print("client key code: ", key)
---         StormState:reset()
---     end
+-- DEBUG ONLY --
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+local function onKeyPressed(key)
+    -- if (not isAdmin()) then
+    -- return
+    -- end
 
---     if (key == 23) then
---     end
--- end
+    -- Key O to trigger event.
+    if (key == 24) then
+        local state = ClientUtils.get()
+        state.hour = getGameTime():getWorldAgeHours()
+        ModData.transmit(MasoStorm.ModDataNS)
+        getPlayer():Say("Forcing storm" .. tostring(state.hour))
+    end
+end
 
--- Events.OnKeyPressed.Add(onKeyPressed)
+Events.OnKeyPressed.Add(onKeyPressed)
+
+local function onReceiveGlobalModData(key, modData)
+    getPlayer():Say("received md: " .. key)
+end
+
+Events.OnReceiveGlobalModData.Add(onReceiveGlobalModData)
