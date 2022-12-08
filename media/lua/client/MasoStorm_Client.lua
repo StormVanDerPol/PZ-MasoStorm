@@ -9,6 +9,11 @@ local ClientUtils = {
     end,
     get = function()
         return ModData.get(MasoStorm.ModDataNS)
+    end,
+    sync = function(key, modData)
+        if isClient() and key == MasoStorm.ModDataNS then
+            ModData.add(key, modData)
+        end
     end
 }
 
@@ -147,5 +152,10 @@ local function onGameStart()
     ClientUtils.request()
 end
 
+local function onReceiveGlobalModData(key, modData)
+    ClientUtils.sync(key, modData)
+end
+
 Events.EveryOneMinute.Add(onEveryOneMinute)
 Events.OnGameStart.Add(onGameStart)
+Events.OnReceiveGlobalModData.Add(onReceiveGlobalModData)
