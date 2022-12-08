@@ -117,11 +117,12 @@ local function onEveryOneMinute()
 
     -- Initialize
     if (not StormState.init) then
-        -- Sync for good measure
-        ServerUtils.transmit(state)
         StormState.init = true
         StormUtils.initFakeSnowStorm()
     end
+
+    -- Spam transmits when the event is active
+    ServerUtils.transmit(state)
 
     local progress = MasoStorm.Utils.getStormProgress(state.hour)
     local weatherFactor = MasoStorm.Utils.getFactor(progress, 0.25, 0.5)
