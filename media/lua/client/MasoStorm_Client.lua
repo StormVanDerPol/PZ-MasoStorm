@@ -66,15 +66,12 @@ local StormUtils = {
         local scratchDefense, biteDefense, skinDefense = MasoStorm.Utils.getDefenses(character, partIndex)
         local randomPart = character:getBodyDamage():getBodyPart(BodyPartType.FromIndex(partIndex))
 
-        character:Say("scratch: " .. tostring(scratchDefense) .. " bite: " .. tostring(biteDefense))
-
         -- TODO: add (special) gear to prevent damage.
         -- TODO: factor in gear in burn chance.
         if (MasoStorm.Settings.canBurn and rng == 0) then
             randomPart:setBurned()
         else
             local defenseModifier = 1 - ((scratchDefense * 2 + biteDefense + skinDefense) / 4) / 100
-            -- character:Say("defensemod: " .. tostring(defenseModifier))
             randomPart:AddDamage(ZombRand(10, 25) * MasoStorm.Settings.damageMultiplier * defenseModifier)
         end
     end,
@@ -152,35 +149,3 @@ end
 
 Events.EveryOneMinute.Add(onEveryOneMinute)
 Events.OnGameStart.Add(onGameStart)
-
--- DEBUG ONLY --
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-local function onKeyPressed(key)
-    -- if (not isAdmin()) then
-    -- return
-    -- end
-
-    -- Key O to trigger event.
-    if (key == 24) then
-        local state = ClientUtils.get()
-        state.hour = getGameTime():getWorldAgeHours()
-        ModData.transmit(MasoStorm.ModDataNS)
-        getPlayer():Say("Forcing storm" .. tostring(state.hour))
-    end
-end
-
-Events.OnKeyPressed.Add(onKeyPressed)
-
-local function onReceiveGlobalModData(key, modData)
-    if key == MasoStorm.ModDataNS then
-        getPlayer():Say("received md: " .. key)
-    end
-end
-
-Events.OnReceiveGlobalModData.Add(onReceiveGlobalModData)

@@ -139,26 +139,3 @@ Events.OnInitGlobalModData.Add(onInitGlobalModData)
 Events.EveryHours.Add(onEveryHours)
 Events.EveryOneMinute.Add(onEveryOneMinute)
 Events.OnConnected.Add(onConnected)
-
--- DEBUG ONLY --
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-
-local function onReceiveGlobalModData(key, modData)
-    if (key ~= MasoStorm.ModDataNS) then
-        return
-    end
-
-    local state = ServerUtils.get()
-    state = modData
-    StormState:reset()
-    ServerUtils.transmit(state)
-end
-
-Events.OnReceiveGlobalModData.Add(onReceiveGlobalModData)

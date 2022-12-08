@@ -4,9 +4,9 @@ Sandbox_EN = {
     Sandbox_MasoStormMaxDays = "Maso Storm: Maximum days passed"
 	Sandbox_MasoStormMaxDays_tooltip = "Maximum number of days that can pass so the storm can happen again.",
     Sandbox_MasoStormDuration = "Maso Storm: Storm duration"
-    Sandbox_MasoStormDuration_tooltip = "Duration of the storm in hours",
+    Sandbox_MasoStormDuration_tooltip = "Duration of the storm in hours. I haven't extensively tested other values besides 3. When in doubt, leave at default",
     Sandbox_MasoStormDamageMultiplier = "Maso Storm: Damage multiplier"
-    Sandbox_MasoStormDamageMultiplier_tooltip = "Change the amount of physical (and emotional) damage the storm will inflict.",
+    Sandbox_MasoStormDamageMultiplier_tooltip = "Change the amount of damage the storm will inflict.",
     Sandbox_MasoStormCanBurn = "Maso Storm: Enable burns"
-    Sandbox_MasoStormCanBurn_tooltip = "If enabled there's a 1/10 chance a damage tick will inflict a burn instead",
+    Sandbox_MasoStormCanBurn_tooltip = "If enabled there's a chance a damage tick will inflict a burn instead",
 }
