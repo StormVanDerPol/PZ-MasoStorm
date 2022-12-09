@@ -133,7 +133,7 @@ local function onEveryOneMinute()
     local weatherFactor = MasoStorm.Utils.getFadeInAndOutFactor(progress, 0.25, 0.6, 0.55)
     StormUtils.updateFakeSnowStorm(weatherFactor)
 
-    if (weatherFactor == 1 and progress >= 0.55 and progress < 0.6) then
+    if (progress >= 0.55 and progress < 0.6) then
         StormUtils.cleanupFakeSnowStorm()
     end
 end
