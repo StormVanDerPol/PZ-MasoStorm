@@ -27,7 +27,7 @@ local StormState = {
 
 local StormUtils = {
     playRandomThunder = function(isSevere, chance)
-        if (getPlayer:HasTrait("Deaf") or ZombRand(0, 100) > chance) then
+        if (getPlayer():HasTrait("Deaf") or ZombRand(0, 100) > chance) then
             return
         end
 
